@@ -1,0 +1,55 @@
+Test Cases:
+----------
+
+Execution without input "./search":
+  expected: Input file does not exist
+  actual: Input file does not exist
+
+Execution with invalid file "./search tacos":
+  expected: Input file does not exist
+  actual: Input file does not exist
+
+
+
+The following are executed with "./search out":
+  input: so
+  expected: No matches found.
+  actual: No matches found.
+  comment: so with no second argument
+  ---
+
+  input: sa
+  expected: No matches found.
+  actual: No matches found.
+  comment: sa with no second argument
+  ---
+
+  input:
+  expected: No matches found.
+  actual: No matches found.
+  comment: Empty string
+  ---
+
+  input: so @@
+  expected: No matches found.
+  actual: No matches found.
+  comment: Invalid characters
+  ---
+
+  input: sa @@
+  expected: No matches found.
+  actual: No matches found.
+  comment: Invalid characters
+  ---
+
+  input: so foo
+  expected: test/out, test/out2
+  actual: test/out2, test/out
+  comment: Valid query
+  ---
+
+  input: so foo
+  expected: test/out, test/out2
+  actual: test/out2, test/out
+  comment: Valid query
+  ---
