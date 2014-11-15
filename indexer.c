@@ -1,4 +1,4 @@
-// Krishna Yellayi and Arnesh Sahay
+/* Krishna Yellayi and Arnesh Sahay*/
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "indexer.h"
+#include "index.h"
 #include <unistd.h>
 #include <errno.h>
 
@@ -33,20 +34,21 @@ int GetIndex(char *word) {
 }
 FileNode *CreateFileNode(char *file){
 	FileNode *fn = (FileNode *)malloc(sizeof(FileNode));
-	fn->filename = file;
+	fn->filename = strdup(file);
 	fn->occ =1;
 	fn->next = NULL;
 	return fn;
 }
-//CreateNode Needs to be edited 10/16/14 add filename
+/*CreateNode Needs to be edited 10/16/14 add filename*/
 Node *CreateNode(char *word) {
-	word = lowerCase(word);
 	Node *new_Node = (Node *)malloc(sizeof(Node));
-	//printf("Creating node with: %s\n", word);
+	word = lowerCase(word);
+	
+	/*printf("Creating node with: %s\n", word);*/
 	new_Node->info = NULL;
-	new_Node->value = word;
+	new_Node->value = strdup(word);
 	new_Node->next = NULL;
-	new_Node->info = NULL;//need to change this
+	new_Node->info = NULL;/*need to change this*/
 	new_Node->freq = 1;
 	return new_Node;
 }
@@ -60,6 +62,7 @@ LList *CreateLL() {
 
 void InsertLL(LList *list, char *word){
 	Node *newNode = CreateNode(word);
+	Node *listptr;
 	if(!list){
 		list = CreateLL();
 		newNode = list->root;
@@ -69,7 +72,7 @@ void InsertLL(LList *list, char *word){
 	   list->root = newNode;
 	   return;
 	}
-	Node *listptr = list->root;
+	listptr = list->root;
 	while(listptr!= NULL){
 		if(strcmp(word, listptr->value) == 0){
 			listptr->freq++;
@@ -85,9 +88,14 @@ void InsertLL(LList *list, char *word){
 	return;
 }
 hashTable *CreateTable() {
+	int i;
 	hashTable *new_table = (hashTable *)malloc(sizeof(hashTable));
-	new_table->buckets = (LList **)malloc(sizeof(LList *) * 36);
+	new_table->buckets = (LList **)malloc(36 *sizeof(LList *));
 	new_table->size = 36;
+	for(i = 0; i < 36; i++){
+		new_table->buckets[i] = CreateLL();
+	}
+
 	return new_table;
 }
 char *lowerCase(char *word){
@@ -100,8 +108,9 @@ char *lowerCase(char *word){
 }
 void InsertToTable(hashTable *hash, char *word, char *filename){
 	int i;
+	Node *ptr, *pre;
 	i = GetIndex(word);
-	Node *ptr;
+	
 	
 	if(!hash){
 		return;
@@ -109,20 +118,19 @@ void InsertToTable(hashTable *hash, char *word, char *filename){
 	if(i == -1){
 		return;
 	}
-	if(hash->buckets[i] == NULL){
-		hash->buckets[i] = CreateLL();
+	if(hash->buckets[i]->root == NULL){
 		hash->buckets[i]->root = CreateNode(word);
 		hash->buckets[i]->size++;
 		hash->buckets[i]->root->info = CreateFileNode(filename);
-		//printLL(hash, i);
+		/*printLL(hash, i);
 		//printf("%s\n",hash->buckets[i]->root->value);
 		//printTable(hash);
 
-		//need to add more here
+		/need to add more here*/
 		return;
 	}else{
 		ptr = hash->buckets[i]->root;
-
+		pre = ptr;
 		while(ptr != NULL){
 			if(strcmp(lowerCase(word),ptr->value)== 0){
 				FileNode *fptr = ptr->info;
@@ -145,13 +153,13 @@ void InsertToTable(hashTable *hash, char *word, char *filename){
 									return;*/
 					return;
 					}
-					else if(strcmp(filename, fptr->filename) < 0){
+					/*else if(strcmp(filename, fptr->filename) < 0){
 						FileNode *newf = CreateFileNode(filename);
 						newf->next = fptr;
-						fptr  = newf;
-						//puts(newf->filename);
-						//printLL(hash, i);
-						/*if(isalpha(ptr->value[0])){
+						prev->next = newf;
+						puts(newf->filename);
+						printLL(hash, i);
+						if(isalpha(ptr->value[0])){
 							if(ptr->value[0] - 'a' != i){
 								puts("error aborting now");
 								exit(42);
@@ -164,10 +172,10 @@ void InsertToTable(hashTable *hash, char *word, char *filename){
 								}
 							}
 								else
-									return;*/
+									return;
 					return;
 					
-					}
+					}*/
 					else{
 						if(fptr->next == NULL){
 							FileNode *newf = CreateFileNode(filename);
@@ -178,12 +186,12 @@ void InsertToTable(hashTable *hash, char *word, char *filename){
 				fptr=fptr->next;
 			}
 		}
-		else if(strcmp(lowerCase(word), ptr->value) < 0){
+		/*else if(strcmp(lowerCase(word), ptr->value) < 0){
 				Node *newptr = CreateNode(word);
-				ptr->next = newptr;
-				ptr  = newptr;
+				newptr->next = ptr;
+				pre->next = newptr;
 				return;
-		}
+		}*/
 		else{
 			if(ptr->next == NULL){
 				Node *newOne = CreateNode(word);
@@ -191,10 +199,10 @@ void InsertToTable(hashTable *hash, char *word, char *filename){
 				newOne->info = fn;
 				ptr->next = newOne;
 				hash->buckets[i]->size++;
-				//printLL(hash, i);
-				//printf("%s\n",ptr->value);
-				//printTable(hash);
-				/*if(isalpha(ptr->value[0])){
+				/*printLL(hash, i);
+				printf("%s\n",ptr->value);
+				printTable(hash);
+				/if(isalpha(ptr->value[0])){
 								if(ptr->value[0] - 'a' != i){
 									puts("error aborting now");
 									exit(42);
@@ -211,14 +219,16 @@ void InsertToTable(hashTable *hash, char *word, char *filename){
 		return;
 		}
 	}
+		pre = ptr;
 		ptr = ptr->next;
 		}
 	}
 }
 char *getseparators(char *string){
 	char *delims;
-	delims = (char *)malloc(100*sizeof(char));
 	int i,j;
+	delims = (char *)malloc(100*sizeof(char));
+	
 	j = 0;
 	for(i = 0; string[i] != '\0'; i++){
 		if(!isalnum(string[i])){

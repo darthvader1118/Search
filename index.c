@@ -10,11 +10,11 @@
 #include <errno.h>
 
 #include "indexer.h"
-
+#include "index.h"
 
 void Fparse(char *filename, hashTable *ftable){
   FILE *stream;
-  char *contents; //= (char *)malloc(2000*sizeof(char *));
+  char *contents; 
   char *token;
   int j, size;
   stream = fopen(filename, "rb+");
@@ -28,28 +28,23 @@ void Fparse(char *filename, hashTable *ftable){
       contents[j] = fgetc(stream);
     }
     fclose(stream);
-  //size_t len = 0;
-    
-  //use strtok not this shit
-  //fgets(contents, 2000, stream);
-  //while(contents != NULL){
     contents = FormatString(contents);
   
   token = strtok(contents, " ");
   while(token != NULL){
     InsertToTable(ftable, token, filename);
-    //puts(token);
+    
     token = strtok(NULL, " ");
-  }
-  //free(contents);
-  //char *contents = (char *)malloc(2000*sizeof(char *));
-  //contents = fgets(contents, 2000, stream);
-  //free(sep);
+    }
   }
   
 }
 int WriteToFile(char * invfile, hashTable *hash){
   FILE *fp;
+  int i;
+  LList *ll;
+  Node *ptr;
+  FileNode *fnp;
   fp = fopen(invfile, "wb+");
   if(fp == NULL){
     return 0;
@@ -57,13 +52,11 @@ int WriteToFile(char * invfile, hashTable *hash){
   if(hash == NULL){
     return 0;
   }
-  int i;
-  LList *ll;
-  Node *ptr;
+ 
   
   for(i = 0; i < 36; i++){
     ll = hash->buckets[i];
-    //fprintf(fp, "hello\n");
+    
     if(ll == NULL){
       continue;
     }
@@ -74,7 +67,7 @@ int WriteToFile(char * invfile, hashTable *hash){
     while(ptr != NULL){
 
       fprintf(fp,"<list> %s\n",ptr->value);
-      FileNode *fnp = ptr->info;
+      fnp = ptr->info;
       while(fnp !=NULL){
         fprintf(fp, "%s %d ",fnp->filename,fnp->occ);
         fnp = fnp->next;
@@ -87,47 +80,49 @@ int WriteToFile(char * invfile, hashTable *hash){
   return 1;
 }
 
-static void dir_traversal(char *path, hashTable *table) {
+void dir_traversal(char *path, hashTable *table) {
 
-  //Declare directory & file variables
-  DIR *dir; struct dirent *fil;
+  /*Declare directory & file variables*/
+  DIR *dir; struct dirent *fil; size_t fil_pathsize;
+  char *fil_path, *fil_name;
 
-  //Tells user what directory is currently being accessed
+  /*Tells user what directory is currently being accessed*/
   printf("Current directory: %s\n", path);
 
-  //Error checking
+  /*Error checking*/
   if(!(dir=opendir(path)))
     puts("Invalid Directory");
-  //While the directory can be read, the function continues to traverse
+  /*While the directory can be read, the function continues to traverse*/
   while((fil = readdir(dir))){
-    //Extract filename from fil variable
-    char *fil_name = (fil->d_name);
-    //Continue to next instance of while loop if file is not an actual file
+    /*Extract filename from fil variable*/
+    fil_name = (fil->d_name);
+    
+    /*Continue to next instance of while loop if file is not an actual file*/
     if(strcmp(fil_name, ".") == 0 || strcmp(fil_name, "..") == 0)
       continue;
-    //Designate size for the filepath variable
-    size_t fil_pathsize = (2 * sizeof(char)) + strlen(fil_name) + (strlen(path));
-    //Declaration & memory allocation for filepath variable
-    char *fil_path = malloc(fil_pathsize);
-    //Copy the variable contents of path to the filepath variable
+    /*Designate size for the filepath variable*/
+    fil_pathsize = (2 * sizeof(char)) + strlen(fil_name) + (strlen(path));
+    /*Declaration & memory allocation for filepath variable*/
+    fil_path = malloc(fil_pathsize);
+    /*Copy the variable contents of path to the filepath variable*/
     strcpy(fil_path, path);
-    //Add forward slash character to the filepath variable
+    /*Add forward slash character to the filepath variable*/
     strcat(fil_path, "/");
-    //Add filename variable contents to the filepath variable
+    /*Add filename variable contents to the filepath variable*/
     strcat(fil_path, fil_name);
-    //Recursive call to dir_traversal method if fil contains a directory
+    /*Recursive call to dir_traversal method if fil contains a directory*/
     if(fil->d_type == DT_DIR){
       dir_traversal(fil_path,table);
-    //Calls file parsing function if fil contains a regular file
+    /*Calls file parsing function if fil contains a regular file*/
     }else if(fil->d_type == DT_REG){
       Fparse(fil_path, table);
       continue;
     }else
       puts("error");
-    //Frees memory for filepath variable
-    //free(fil_path);
+    /*Frees memory for filepath variable*/
+    /*free(fil_path);*/
   }
-  //Closes the current directory after all its directories are traversed & files are parsed  
+  /*Closes the current directory after all its directories are traversed & files are parsed*/  
   closedir(dir);
 }
 void freeHashTable(hashTable *hash){
@@ -136,8 +131,7 @@ void freeHashTable(hashTable *hash){
   Node *ptr;
   for(i = 0; i < 36; i++){
     ll = hash->buckets[i];
-    //fprintf(fp, "hello\n");
-    if(ll == NULL){
+      if(ll == NULL){
       free(ll);
       continue;
     }
@@ -168,35 +162,34 @@ void printTable(hashTable *hash){
   int i;
   LList *ll;
   Node *ptr;
+  FileNode *fnp;
   for(i = 0; i < hash->size; i++){
     ll = hash->buckets[i];
-    //fprintf(fp, "hello\n");
+    
     if(ll == NULL){
       free(ll);
       continue;
     }
     ptr = ll->root;
     if(ptr == NULL){
-      //printf("%s\n", ptr->value);
+      
       continue;
     }
     while(ptr != NULL){
 
       printf("%s\n", ptr->value);
-      FileNode *fnp = ptr->info;
+      fnp = ptr->info;
       while(fnp !=NULL){
         printf("%s\n", fnp->filename);
         
         fnp = fnp->next;
       }
-      //free(ptr->value);
-      //free(ptr->info);
-      //free(ptr);
+      
       ptr = ptr->next;
     }
-    //free(ll);
+    /*free(ll);*/
   }
-  //free(hash);
+  /*free(hash);*/
 }
 
 
@@ -235,29 +228,29 @@ int main(int argc, char **argv){
   {
       if( s.st_mode & S_IFDIR )
       {
-          //it's a directory
+          /*it's a directory*/
           dir_traversal(path,ht);
       }
       else if( s.st_mode & S_IFREG )
       {
-          //it's a file
+          /*it's a file*/
           Fparse(path, ht);
       }
       else
       {
-          //something else
+          /*something else*/
           puts("Did not type in a valid directory or file");
       }
   }
   else
   {
-      //error
+      /*error*/
       puts("Try again");
   }
   WriteToFile(inv, ht);
   puts("file successfully written");
-  //printTable(ht);
-  //freeHashTable(ht); 
+  /*printTable(ht);*/
+  /*freeHashTable(ht);*/ 
 
   
 return 0;

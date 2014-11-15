@@ -57,7 +57,7 @@ void Fparse(char *filename, hashTable *ftable);
 
 int WriteToFile(char * invfile, hashTable *hash);
 
-static void dir_traversal(char *path, hashTable *table);
+void dir_traversal(char *path, hashTable *table);
 
 void freeHashTable(hashTable *hash);
 

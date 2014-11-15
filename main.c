@@ -5,38 +5,38 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "index.h"
+#include "indexer.h"
 #include "search.h"
-
+#include "index.h"
 
 int main(int argc, char **argv) {
-  FILE *rf; /* read file */
-  tnode trie;
+  FILE *fp;
+  hashTable* ht;
 
-  /* Check if file exists */
+  /* Checks existentiality of given file */
   if (access(argv[1], F_OK) == -1) {
     printf("Input file does not exist\n");
     return 1;
   }
 
-  rf = fopen(argv[1], "r");
-  if (!fileIsValid(rf)) {
+  fp = fopen(argv[1], "r");
+  if (!fileValid(fp)) {
     return 1;
   }
 
-  trie = createTree();
-  loadFileToTree(trie, rf);
 
 
-  /* Start menu loop */
-  menu();
+  ht = CreateTable();
 
-  doSearchLoop(trie);
+  loadFile(ht, fp);
+
+  printf("everything in menu\n");
+
+  infiniteLoop(ht);
 
 
-  fclose(rf);
-  destroyTree(trie);
-  destroy_list(FILES);
+  fclose(fp);
 
+  /*freeHashTable(ht);*/
   return 0;
 }

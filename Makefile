@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-pedantic -Wall
-CFILES=search.c main.c
+CFLAGS=-g -Wall -pedantic
+CFILES= search.c main.c indexer.c
 
 
 all: index search
@@ -9,15 +9,7 @@ search:
 	$(CC) $(CFILES) $(CFLAGS) -o search
 
 index:
-	$(CC) $(CFLAGS) indexer.c -o index
-
-searchdebug:
-	$(CC) -g $(CFILES) $(CFLAGS) -o search
-
-indexdebug:
-	$(CC) -g $(CFLAGS) indexer.c -o index
-
-debug: indexdebug searchdebug
-
+	$(CC) $(CFLAGS) index.c indexer.c -o index
+	
 clean:
 	rm search index
